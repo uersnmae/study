@@ -6,8 +6,9 @@ ETNode *ET_CreateNode(ElementType NewData)
 	ETNode	*NewNode = (ETNode *)malloc(sizeof(ETNode));
 	NewNode->Left = NULL;
 	NewNode->Right = NULL;
-	NewNode->Data = malloc(sizeof(NewData));
-	strcpy(NewNode->Data, NewData);
+	NewNode->Data = strdup(NewData);
+	if (NewNode->Data == NULL)
+		return (NULL);
 	return (NewNode);
 }
 
@@ -55,19 +56,23 @@ void	ET_PostorderPrintTree(ETNode *Node)
 	printf(" %s", Node->Data);
 }
 
-void	ET_BuildExpressionTree(char *PostfixExpression, ETNode **Node)
+void	ET_BuildExpressionTree(char **PostfixExpression, int *Index, ETNode **Node)
 {
-	char	*Token	= PostfixExpression;
+	if (PostfixExpression[*Index] == NULL)
+		return ;
 
-	if (strlen(Token->Data) == 1 && !ft_isdigit(Token->Data[0]))
+	char	*Token	= PostfixExpression[*Index];
+	--(*Index);
+
+	if (strlen(Token) == 1 && !ft_isdigit(Token[0]))
 	{
-		switch (*Token)
+		switch (Token[0])
 		{
 			case '+': case '-': case '*': case '/':
 			(*Node) = ET_CreateNode(Token);
-			ET_BuildExpressionTree(PostfixExpression, &(*Node)->Right);
-			ET_BuildExpressionTree(PostfixExpression, &(*Node)->Left);
-			break ;
+			ET_BuildExpressionTree(PostfixExpression, Index, &(*Node)->Right);
+			ET_BuildExpressionTree(PostfixExpression, Index, &(*Node)->Left);
+			return ;
 		}
 	}
 	else
@@ -86,15 +91,31 @@ double	ET_Evaluate(ETNode *Tree)
 	{
 		switch (*(Tree->Data))
 		{
-			case '+': case '-': case '*': case '/':
+			case '+':
 			Left	= ET_Evaluate(Tree->Right);
 			Right	= ET_Evaluate(Tree->Left);
-
-			if (*(Tree->Data) == '+') Result = Left + Right;
-			else if (*(Tree->Data) == '-') Result = Left - Right;
-			else if (*(Tree->Data) == '*') Result = Left * Right;
-			else if (*(Tree->Data) == '/') Result = Left / Right;
-			break ;
+			Result = Left + Right;
+			break;
+			case '-':
+			Left	= ET_Evaluate(Tree->Right);
+			Right	= ET_Evaluate(Tree->Left);
+			Result = Left - Right;
+			break;
+			case '*':
+			Left	= ET_Evaluate(Tree->Right);
+			Right	= ET_Evaluate(Tree->Left);
+			Result = Left * Right;
+			break;
+			case '/':
+			Left	= ET_Evaluate(Tree->Right);
+			Right	= ET_Evaluate(Tree->Left);
+			if (Right == 0)
+			{
+				fprintf(stderr, "Error: Division by zero\n");
+				exit(EXIT_FAILURE);
+			}
+			Result = Left / Right;
+			break;
 		}
 	}
 	else

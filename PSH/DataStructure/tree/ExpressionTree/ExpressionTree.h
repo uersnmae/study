@@ -22,7 +22,7 @@ void	ET_DestroyTree(ETNode *Root);
 void	ET_PreorderPrintTree(ETNode *Node);
 void	ET_InorderPrintTree(ETNode *Node);
 void	ET_PostorderPrintTree(ETNode *Node);
-void	ET_BuildExpressionTree(char *PostfixExpression, ETNode **Node);
+void	ET_BuildExpressionTree(char **PostfixExpression, int *Index, ETNode **Node);
 double	ET_Evaluate(ETNode *Tree);
 
 #endif
